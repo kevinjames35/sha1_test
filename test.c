@@ -4,10 +4,22 @@ SHA1 tests by Philip Woolford <woolford.philip@gmail.com>
  */
 
 #include "sha1.h"
-#include "CUnit/Basic.h"
-#include "stdio.h"
-#include "string.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <stdlib.h>
 
+
+
+#include <time.h>
+#include <ctype.h>
+#include "lmbinc.h"
+#include <assert.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #define SUCCESS 0
 
 /* The suite initialization function.
@@ -30,188 +42,188 @@ int clean_suite(
   return 0;
 }
 
-/* Test Vector 1 */
-void testvec1(
+
+/* Test Vector 7 */
+void testvec7(
     void
 )
 {
-  char const string[] = "abc";
-  char const expect[] = "a9993e364706816aba3e25717850c26c9cd0d89d";
-  char result[21];
+SHA1_CTX ctx;
+  unsigned char string[40];
+  
+  unsigned char result[20];
   char hexresult[41];
   size_t offset;
+string[0]=0x31;
+string[1]=0x00;
+string[2]=0x32;
+string[3]=0x00;
+string[4]=0x33;
+string[5]=0x00;
+string[6]=0x34;
+string[7]=0x00;
+string[8]=0x35;
+string[9]=0x00;
+string[10]=0x36;
+string[11]=0x00;
+string[12]=0x37;
+string[13]=0x00;
+string[14]=0x38;
+string[15]=0x00;
+string[16]=0x39;
+string[17]=0x00;
+string[18]=0x30;
+string[19]=0x00;
 
+string[20]=0x31;
+string[21]=0x00;
+string[22]=0x32;
+string[23]=0x00;
+string[24]=0x33;
+string[25]=0x00;
+string[26]=0x34;
+string[27]=0x00;
+string[28]=0x35;
+string[29]=0x00;
+string[30]=0x36;
+string[31]=0x00;
+string[32]=0x37;
+string[33]=0x00;
+string[34]=0x38;
+string[35]=0x00;
+string[36]=0x39;
+string[37]=0x00;
+string[38]=0x30;
+string[39]=0x00;
+
+//char *string2;
+//string2=0x31;
   /* calculate hash */
-  SHA1( result, string, strlen(string) );
-
+  //SHA1( result, string, 2 );
+SHA1Init(&ctx);
+SHA1Update(&ctx,string,40);
+//printf("ctx :%x\n",ctx.state[0]);
+//printf("ctx :%x\n",ctx.state[1]);
+//printf("ctx :%x\n",ctx.state[2]);
+//printf("ctx :%x\n",ctx.state[3]);
+//printf("ctx :%x\n",ctx.state[4]);
+//printf("ctx count:%x\n",ctx.count[0]);
+SHA1Final(result,&ctx);
   /* format the hash for comparison */
   for( offset = 0; offset < 20; offset++) {
     sprintf( ( hexresult + (2*offset)), "%02x", result[offset]&0xff);
   }
-
-  CU_ASSERT( strncmp(hexresult, expect, 40) == SUCCESS );
+	printf("sha1 :%s\n",hexresult);
 }
-
-/* Test Vector 2 */
-void testvec2(
-    void
-)
+void __printf_usage(char *argv0)
 {
-  char const string[] = "";
-  char const expect[] = "da39a3ee5e6b4b0d3255bfef95601890afd80709";
-  char result[21];
-  char hexresult[41];
-  size_t offset;
+	printf("Usage: %s PASSWORD		:generate SHA1 code using PASSWORD\n", argv0);
+	printf("       %s -e PASSWORD		:genarate SHA1 code using PASSWORD and write to eeprom\n", argv0);
 
-  /* calculate hash */
-  SHA1( result, string, strlen(string) );
 
-  /*format the hash for comparison */
-  for( offset = 0; offset < 20; offset++) {
-    sprintf( ( hexresult + (2*offset)), "%02x", result[offset]&0xff);
-  }
-
-  CU_ASSERT( strncmp(hexresult, expect, 40) == SUCCESS );
 }
-
-/* Test Vector 3 */
-void testvec3(
-    void
-)
+int main(int argc, char *argv[])
 {
-  char const string[] = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
-  char const expect[] = "84983e441c3bd26ebaae4aa1f95129e5e54670f1";
-  char result[21];
-  char hexresult[41];
-  size_t offset;
+int xi,yi;
+unsigned char *buff;
+unsigned char result[20];
+char hexresult[41];
+size_t offset;
+SHA1_CTX ctx;
 
-  /* calculate hash */
-  SHA1( result, string, strlen(string) );
+uint8_t bSlot=0xFF;
+int iRet;
+uint16_t wAddr=0;
+uint8_t bData=0;
 
-  /* format the hash for comparison */
-  for( offset = 0; offset < 20; offset++) {
-    sprintf( ( hexresult + (2*offset)), "%02x", result[offset]&0xff);
-  }
 
-  CU_ASSERT( strncmp(hexresult, expect, 40) == SUCCESS );
+
+
+	if ( argc < 2 ) {
+		__printf_usage(argv[0]);
+		return -1;
+	}
+	if ( getuid() != 0 ) {
+		printf("\e[1;31m<Warning> Please uses root user !!!\e[m\n");
+		return -1;
+	}
+
+	for ( xi= 1; xi< argc ; xi++ ) {
+		if( strcmp("-e", argv[xi]) == 0 ) 
+		{
+//------------------------------------------------------------------------------------
+			printf("input password: %s\tlength: %ld\n",argv[1],strlen(argv[1]));
+	
+			buff=malloc(2*strlen(argv[1]));
+			for(yi=0;yi<(strlen(argv[1]));yi++)
+			{
+				*(buff+(2*yi))=*(argv[1]+yi);
+				*(buff+(2*yi+1))=0x00;
+			}
+			for(yi=(2*strlen(argv[1]));yi<40;yi++)
+			{
+				*(buff+yi)=0x00;
+			}
+			SHA1Init(&ctx);
+			SHA1Update(&ctx,buff,40);
+
+			SHA1Final(result,&ctx);
+  			/* format the hash for comparison */
+  			for( offset = 0; offset < 20; offset++) {
+    				sprintf( ( hexresult + (2*offset)), "%02x", result[offset]&0xff);
+  			}
+			printf("sha1 :%s\n",hexresult);
+			free(buff);
+				
+
+			iRet = LMB_DLL_Init();
+			if ( iRet != ERR_Success ) {
+				printf("please confirm the API librraies is matched this platform\n");
+				return -1;
+			}
+
+			for(wAddr=0;wAddr<20;wAddr++)
+			{
+				//bData = (uint8_t)(*(buff+wAddr));
+				bData = (uint8_t)(result[wAddr]);
+	
+				iRet = LMB_EEP_WriteByte(bSlot, wAddr, bData);
+				if ( iRet == ERR_Success ) printf("%c", bData);
+			}
+
+
+
+	//------------------------------------------------------------------------------------------------------------------------
+		}
+		else {
+			printf("input password: %s\tlength: %ld\n",argv[1],strlen(argv[1]));
+	
+			buff=malloc(2*strlen(argv[1]));
+			for(yi=0;yi<(strlen(argv[1]));yi++)
+			{
+				*(buff+(2*yi))=*(argv[1]+yi);
+				*(buff+(2*yi+1))=0x00;
+			}
+			for(yi=(2*strlen(argv[1]));yi<40;yi++)
+			{
+				*(buff+yi)=0x00;
+			}
+			SHA1Init(&ctx);
+			SHA1Update(&ctx,buff,40);
+
+			SHA1Final(result,&ctx);
+  			/* format the hash for comparison */
+  			for( offset = 0; offset < 20; offset++) {
+    				sprintf( ( hexresult + (2*offset)), "%02x", result[offset]&0xff);
+  			}
+			//for( yi=0; yi < 20; yi++) {
+			//	printf("sha1 :%2X\n",result[yi]);
+			//}
+			printf("sha1 :%s\n",hexresult);
+
+			free(buff);		
+		}
+	}
+//testvec7();
 }
 
-/* Test Vector 4 */
-void testvec4(
-    void
-)
-{
-  char const string1[] = "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghij";
-  char const string2[] = "klmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu";
-  char const expect[] = "a49b2446a02c645bf419f995b67091253a04a259";
-  unsigned char result[21];
-  char hexresult[41];
-  size_t offset;
-  SHA1_CTX ctx;
-
-  /* calculate hash */
-  SHA1Init(&ctx);
-  SHA1Update( &ctx, (unsigned char const *)string1, strlen(string1) );
-  SHA1Update( &ctx, (unsigned char const *)string2, strlen(string2) );
-  SHA1Final(result, &ctx);
-
-  /* format the hash for comparison */
-  for( offset = 0; offset < 20; offset++) {
-    sprintf( ( hexresult + (2*offset)), "%02x", result[offset]&0xff);
-  }
-
-  CU_ASSERT( strncmp(hexresult, expect, 40) == SUCCESS );
-}
-
-/* Test Vector 5 */
-void testvec5(
-    void
-)
-{
-  char string[1000001];
-  char const expect[] = "34aa973cd4c4daa4f61eeb2bdbad27316534016f";
-  char result[21];
-  char hexresult[41];
-  int iterator;
-  size_t offset;
-
-  /* generate string */
-  for( iterator = 0; iterator < 1000000; iterator++) {
-    string[iterator] = 'a';
-  }
-  string[1000000] = '\0';
-
-  /* calculate hash */
-  SHA1( result, string, strlen(string) );
-
-  /* format the hash for comparison */
-  for( offset = 0; offset < 20; offset++) {
-    sprintf( ( hexresult + (2*offset)), "%02x", result[offset]&0xff);
-  }
-
-  CU_ASSERT( strncmp(hexresult, expect, 40) == SUCCESS );
-}
-
-/* Test Vector 6 */
-void testvec6(
-    void
-)
-{
-  char const string[] = "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmno";
-  char const expect[] = "7789f0c9ef7bfc40d93311143dfbe69e2017f592";
-  unsigned char result[21];
-  char hexresult[41];
-  int iterator;
-  size_t offset;
-  SHA1_CTX ctx;
-
-  /* calculate hash */
-  SHA1Init(&ctx);
-  for ( iterator = 0; iterator < 16777216; iterator++) {
-    SHA1Update( &ctx, (unsigned char const *)string, strlen(string) );
-  }
-  SHA1Final(result, &ctx);
-
-  /* format the hash for comparison */
-  for( offset = 0; offset < 20; offset++) {
-    sprintf( ( hexresult + (2*offset)), "%02x", result[offset]&0xff);
-  }
-
-  CU_ASSERT( strncmp(hexresult, expect, 40) == SUCCESS );
-}
-
-int main(
-    void
-)
-{
-  CU_pSuite pSuite = NULL;
-
-  /* initialize the CUnit test registry */
-  if (CUE_SUCCESS != CU_initialize_registry())
-    return CU_get_error();
-
-  /* add a suite to the registry */
-  pSuite = CU_add_suite("http://www.di-mgt.com.au/sha_testvectors.html", init_suite, clean_suite);
-  if (NULL == pSuite) {
-    CU_cleanup_registry();
-    return CU_get_error();
-  }
-
-  /* add the tests to the suite */
-  if ((NULL == CU_add_test(pSuite, "Test of Test Vector 1", testvec1)) ||
-     (NULL == CU_add_test(pSuite, "Test of Test Vector 2", testvec2)) ||
-     (NULL == CU_add_test(pSuite, "Test of Test Vector 3", testvec3)) ||
-     (NULL == CU_add_test(pSuite, "Test of Test Vector 4", testvec4)) ||
-     (NULL == CU_add_test(pSuite, "Test of Test Vector 5", testvec5)) ||
-     (NULL == CU_add_test(pSuite, "Test of Test Vector 6", testvec6)))
-  {
-    CU_cleanup_registry();
-    return CU_get_error();
-  }
-
-  /* Run all tests using the CUnit Basic interface */
-  CU_basic_set_mode(CU_BRM_VERBOSE);
-  CU_basic_run_tests();
-  CU_cleanup_registry();
-  return CU_get_error();
-}

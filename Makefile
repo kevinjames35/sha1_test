@@ -11,5 +11,4 @@ clean:
 	rm -rf *.o $(TESTBINARY)
 
 test:
-	$(CC) $(TESTCFLAGS) -o $(TESTBINARY) $(TESTSOURCES) $(TESTLINKER)
-	./$(TESTBINARY)	
+	$(CC) $(TESTCFLAGS) -o $(TESTBINARY) $(TESTSOURCES) -L ../sha1 liblmbapi.a liblmbio.a -lpthread -lm
