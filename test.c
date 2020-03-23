@@ -131,7 +131,7 @@ char hexresult[41];
 size_t offset;
 SHA1_CTX ctx;
 
-uint8_t bSlot=0xFF;
+uint8_t bSlot=0x0;
 int iRet;
 uint16_t wAddr=0;
 uint8_t bData=0;
@@ -147,20 +147,24 @@ uint8_t bData=0;
 		printf("\e[1;31m<Warning> Please uses root user !!!\e[m\n");
 		return -1;
 	}
-
+			iRet = LMB_DLL_Init();
+			if ( iRet != ERR_Success ) {
+				printf("please confirm the API librraies is matched this platform\n");
+				return 1;
+			}
 	for ( xi= 1; xi< argc ; xi++ ) {
 		if( strcmp("-e", argv[xi]) == 0 ) 
 		{
 //------------------------------------------------------------------------------------
-			printf("input password: %s\tlength: %ld\n",argv[1],strlen(argv[1]));
+			printf("input password: %s\tlength: %ld\n",argv[2],strlen(argv[2]));
 	
-			buff=malloc(2*strlen(argv[1]));
-			for(yi=0;yi<(strlen(argv[1]));yi++)
+			buff=malloc(2*strlen(argv[2]));
+			for(yi=0;yi<(strlen(argv[2]));yi++)
 			{
-				*(buff+(2*yi))=*(argv[1]+yi);
+				*(buff+(2*yi))=*(argv[2]+yi);
 				*(buff+(2*yi+1))=0x00;
 			}
-			for(yi=(2*strlen(argv[1]));yi<40;yi++)
+			for(yi=(2*strlen(argv[2]));yi<40;yi++)
 			{
 				*(buff+yi)=0x00;
 			}
@@ -173,25 +177,24 @@ uint8_t bData=0;
     				sprintf( ( hexresult + (2*offset)), "%02x", result[offset]&0xff);
   			}
 			printf("sha1 :%s\n",hexresult);
-			free(buff);
+			
 				
 
-			iRet = LMB_DLL_Init();
-			if ( iRet != ERR_Success ) {
-				printf("please confirm the API librraies is matched this platform\n");
-				return -1;
-			}
+
 
 			for(wAddr=0;wAddr<20;wAddr++)
 			{
 				//bData = (uint8_t)(*(buff+wAddr));
 				bData = (uint8_t)(result[wAddr]);
-	
+				printf("->%x\n",bData);
+			//	bSlot=0;
 				iRet = LMB_EEP_WriteByte(bSlot, wAddr, bData);
 				if ( iRet == ERR_Success ) printf("%c", bData);
 			}
-
-
+		
+		LMB_DLL_DeInit();
+		free(buff);
+		return 0;
 
 	//------------------------------------------------------------------------------------------------------------------------
 		}
@@ -221,7 +224,8 @@ uint8_t bData=0;
 			//}
 			printf("sha1 :%s\n",hexresult);
 
-			free(buff);		
+			free(buff);
+			return 0;		
 		}
 	}
 //testvec7();
