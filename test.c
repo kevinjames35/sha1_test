@@ -12,7 +12,6 @@ SHA1 tests by Philip Woolford <woolford.philip@gmail.com>
 #include <stdlib.h>
 
 
-
 #include <time.h>
 #include <ctype.h>
 #include "lmbinc.h"
@@ -43,78 +42,6 @@ int clean_suite(
 }
 
 
-/* Test Vector 7 */
-void testvec7(
-    void
-)
-{
-SHA1_CTX ctx;
-  unsigned char string[40];
-  
-  unsigned char result[20];
-  char hexresult[41];
-  size_t offset;
-string[0]=0x31;
-string[1]=0x00;
-string[2]=0x32;
-string[3]=0x00;
-string[4]=0x33;
-string[5]=0x00;
-string[6]=0x34;
-string[7]=0x00;
-string[8]=0x35;
-string[9]=0x00;
-string[10]=0x36;
-string[11]=0x00;
-string[12]=0x37;
-string[13]=0x00;
-string[14]=0x38;
-string[15]=0x00;
-string[16]=0x39;
-string[17]=0x00;
-string[18]=0x30;
-string[19]=0x00;
-
-string[20]=0x31;
-string[21]=0x00;
-string[22]=0x32;
-string[23]=0x00;
-string[24]=0x33;
-string[25]=0x00;
-string[26]=0x34;
-string[27]=0x00;
-string[28]=0x35;
-string[29]=0x00;
-string[30]=0x36;
-string[31]=0x00;
-string[32]=0x37;
-string[33]=0x00;
-string[34]=0x38;
-string[35]=0x00;
-string[36]=0x39;
-string[37]=0x00;
-string[38]=0x30;
-string[39]=0x00;
-
-//char *string2;
-//string2=0x31;
-  /* calculate hash */
-  //SHA1( result, string, 2 );
-SHA1Init(&ctx);
-SHA1Update(&ctx,string,40);
-//printf("ctx :%x\n",ctx.state[0]);
-//printf("ctx :%x\n",ctx.state[1]);
-//printf("ctx :%x\n",ctx.state[2]);
-//printf("ctx :%x\n",ctx.state[3]);
-//printf("ctx :%x\n",ctx.state[4]);
-//printf("ctx count:%x\n",ctx.count[0]);
-SHA1Final(result,&ctx);
-  /* format the hash for comparison */
-  for( offset = 0; offset < 20; offset++) {
-    sprintf( ( hexresult + (2*offset)), "%02x", result[offset]&0xff);
-  }
-	printf("sha1 :%s\n",hexresult);
-}
 void __printf_usage(char *argv0)
 {
 	printf("Usage: %s PASSWORD		:generate SHA1 code using PASSWORD\n", argv0);
@@ -143,18 +70,19 @@ uint8_t bData=0;
 		__printf_usage(argv[0]);
 		return -1;
 	}
-	if ( getuid() != 0 ) {
-		printf("\e[1;31m<Warning> Please uses root user !!!\e[m\n");
-		return -1;
-	}
-			iRet = LMB_DLL_Init();
-			if ( iRet != ERR_Success ) {
-				printf("please confirm the API librraies is matched this platform\n");
-				return 1;
-			}
+	
 	for ( xi= 1; xi< argc ; xi++ ) {
 		if( strcmp("-e", argv[xi]) == 0 ) 
 		{
+			if ( getuid() != 0 ) {
+				printf("\e[1;31m<Warning> Please uses root user !!!\e[m\n");
+				return -1;
+			}
+			iRet = LMB_DLL_Init();
+			if ( iRet != ERR_Success ) {
+				printf("please confirm the API librraies is matched this platform\n");
+				return -1;
+			}
 //------------------------------------------------------------------------------------
 			printf("input password: %s\tlength: %ld\n",argv[2],strlen(argv[2]));
 	
@@ -224,10 +152,11 @@ uint8_t bData=0;
 			//}
 			printf("sha1 :%s\n",hexresult);
 
-			free(buff);
+			//free(buff);
 			return 0;		
 		}
 	}
-//testvec7();
+
+return 0;
 }
 
