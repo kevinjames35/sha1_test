@@ -46,6 +46,7 @@ void __printf_usage(char *argv0)
 {
 	printf("Usage: %s PASSWORD		:generate SHA1 code using PASSWORD\n", argv0);
 	printf("       %s -e PASSWORD		:genarate SHA1 code using PASSWORD and write to eeprom\n", argv0);
+	printf("       %s -c			:clear PASSWORD\n", argv0);
 
 
 }
@@ -122,6 +123,36 @@ uint8_t bData=0;
 		
 		LMB_DLL_DeInit();
 		free(buff);
+		return 0;
+
+	//------------------------------------------------------------------------------------------------------------------------
+		}
+		else if( strcmp("-c", argv[xi]) == 0 ) 
+		{
+			if ( getuid() != 0 ) {
+				printf("\e[1;31m<Warning> Please uses root user !!!\e[m\n");
+				return -1;
+			}
+			iRet = LMB_DLL_Init();
+			if ( iRet != ERR_Success ) {
+				printf("please confirm the API librraies is matched this platform\n");
+				return -1;
+			}
+//------------------------------------------------------------------------------------
+			printf("clear password\n");
+
+
+			for(wAddr=0;wAddr<20;wAddr++)
+			{
+				//bData = (uint8_t)(*(buff+wAddr));
+				bData = 0x20;
+				printf("->%x\n",bData);
+			//	bSlot=0;
+				iRet = LMB_EEP_WriteByte(bSlot, wAddr, bData);
+				if ( iRet == ERR_Success ) printf("%c", bData);
+			}
+		
+		LMB_DLL_DeInit();
 		return 0;
 
 	//------------------------------------------------------------------------------------------------------------------------
